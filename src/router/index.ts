@@ -1,9 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
-// 导入新的游戏组件
-import MinesweeperGame from '@/components/games/MinesweeperGame.vue'
-import HistorySorterGame from '@/components/games/HistorySorterGame.vue'
-import TetrisGame from '@/components/games/TetrisGame.vue'
+import Game2048 from '@/components/games/Game2048.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,23 +10,26 @@ const router = createRouter({
       name: 'home',
       component: HomeView
     },
-    // --- 新增的游戏路由 ---
     {
       path: '/games/minesweeper',
-      name: 'Minesweeper',
-      component: MinesweeperGame
+      name: 'minesweeper',
+      component: () => import('@/components/games/MinesweeperGame.vue')
     },
     {
       path: '/games/history-sorter',
-      name: 'HistorySorter',
-      component: HistorySorterGame
+      name: 'history-sorter',
+      component: () => import('@/components/games/HistorySorterGame.vue')
     },
     {
       path: '/games/tetris',
-      name: 'Tetris',
-      component: TetrisGame
+      name: 'tetris',
+      component: () => import('@/components/games/TetrisGame.vue')
+    },
+    {
+      path: '/games/2048',
+      name: '2048',
+      component: Game2048
     }
-    // ----------------------
   ]
 })
 

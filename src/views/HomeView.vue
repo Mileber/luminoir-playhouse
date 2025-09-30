@@ -1,66 +1,112 @@
-<script setup lang="ts">
-// import TheWelcome from '../components/TheWelcome.vue' // 可以注释掉或删除不用的组件
-</script>
-
 <template>
-  <main>
+  <div class="home">
     <h1 style="text-align:center;">欢迎来到我的多合一游戏PWA!</h1>
-    <nav style="display:flex; justify-content:center; gap:20px; margin-bottom: 20px; flex-wrap: wrap;">
-       <router-link to="/games/minesweeper"><button>开始扫雷游戏</button></router-link>
-       <router-link to="/games/history-sorter"><button>开始历史排序游戏</button></router-link>
-       <router-link to="/games/tetris"><button>开始俄罗斯方块游戏</button></router-link>
-    </nav>
-    <hr/>
-    <!-- <TheWelcome />  可以暂时移除或替换为其他内容 -->
-    <div style="text-align: center; padding: 20px;">
-        <p>请选择上方的游戏开始体验吧！</p>
+
+    <div class="game-links">
+      <div class="game-buttons">
+        <button @click="$router.push('/games/minesweeper')">扫雷</button>
+        <button @click="$router.push('/games/history-sorter')">历史事件排序</button>
+        <button @click="$router.push('/games/tetris')">俄罗斯方块</button>
+        <button @click="$router.push('/games/2048')">2048</button>
+      </div>
     </div>
-  </main>
+    <div style="text-align: center; padding: 20px;">
+      <p>请选择上方的游戏开始体验吧！</p>
+    </div>
+  </div>
 </template>
 
+<script setup lang="ts">
+
+</script>
+
 <style scoped>
- button {
-   padding: 15px 25px;
-   font-size: large;
-   cursor: pointer;
-   border: none;
-   border-radius: 8px;
-   background-color: #42b883; /* Vue green */
-   color: white;
-   transition: background-color 0.3s ease, transform 0.2s ease;
-   /* 移动端适配 */
-   min-width: 200px;
-   width: calc(100% - 40px);
-   max-width: 250px;
- }
+.home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
 
- button:hover {
-   background-color: #35495e; /* Vue dark */
-   transform: scale(1.05);
- }
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
 
- nav {
-   display: flex;
-   justify-content: center;
-   gap: 20px;
-   margin-bottom: 20px;
-   flex-wrap: wrap;
-   padding: 0 10px;
- }
+.logo {
+  display: block;
+  margin: 0 auto 2rem;
+}
 
- @media (max-width: 768px) {
-   nav {
-     flex-direction: column;
-     align-items: center;
-   }
-   
-   button {
-     width: 80%;
-     max-width: 300px;
-   }
- }
+.game-links {
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+}
 
- h1 {
-   padding: 0 10px;
- }
+.game-links h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.game-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+}
+
+.game-buttons button {
+  padding: 12px 24px;
+  font-size: 16px;
+  background-color: #42b883;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  min-width: 120px;
+}
+
+.game-buttons button:hover {
+  background-color: #369870;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .home {
+    padding: 15px;
+  }
+
+  .game-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .game-buttons button {
+    width: 100%;
+    max-width: 250px;
+    padding: 15px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home {
+    padding: 10px;
+  }
+
+  .logo {
+    width: 100px;
+    height: 100px;
+  }
+
+  .game-buttons button {
+    padding: 12px;
+    font-size: 16px;
+    min-width: 200px;
+  }
+}
 </style>
