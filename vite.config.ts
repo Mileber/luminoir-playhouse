@@ -56,7 +56,7 @@ export default defineConfig({
         // Make sure icon path is relative to the 'public' directory or correctly resolved
         icons: [
           {
-            src: 'src/assets/logo.png', // This path is relative to index.html *after* base is applied
+            src: 'logo.png', // This path is relative to index.html *after* base is applied
             sizes: '512x512',
             type: 'image/png'
           }
