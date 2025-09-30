@@ -8,6 +8,7 @@
         <button @click="$router.push('/games/history-sorter')">历史事件排序</button>
         <button @click="$router.push('/games/tetris')">俄罗斯方块</button>
         <button @click="$router.push('/games/2048')">2048</button>
+        <button @click="$router.push('/games/gomoku')">五子棋</button>
       </div>
     </div>
     <div style="text-align: center; padding: 20px;">

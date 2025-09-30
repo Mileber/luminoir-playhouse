@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import Game2048 from '@/components/games/Game2048.vue'
+import GomokuGame from '@/components/games/GomokuGame.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,6 +30,11 @@ const router = createRouter({
       path: '/games/2048',
       name: '2048',
       component: Game2048
+    },
+    {
+      path: '/games/gomoku',
+      name: 'gomoku',
+      component: GomokuGame
     }
   ]
 })
