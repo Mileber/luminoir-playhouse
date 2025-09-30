@@ -6,8 +6,24 @@
       <canvas ref="nextCanvas" class="next-piece" width="120" height="120"></canvas>
       <div v-if="gameOver">Game Over!</div>
       <button @click="resetGame" v-if="gameOver">New Game</button>
+      
+      <div class="touch-instructions" v-if="isMobile">
+        <p>触摸操作说明:</p>
+        <p>- 左右滑动: 移动方块</p>
+        <p>- 向下滑动: 下落</p>
+        <p>- 向上滑动: 旋转</p>
+        <p>- 快速下滑: 硬降落</p>
+        <p>- 也可使用下方按钮控制</p>
+      </div>
     </div>
-    <canvas ref="tetrisCanvas" class="game-canvas" width="600" height="800"></canvas>
+    <canvas 
+      ref="tetrisCanvas" 
+      class="game-canvas" 
+      width="600" 
+      height="800"
+      @touchstart="handleTouchStart"
+      @touchmove="handleTouchMove"
+    ></canvas>
     
     <!-- 移动端控制按钮 -->
     <div class="mobile-controls" v-if="isMobile">
@@ -146,9 +162,17 @@ const rotate = (matrix: number[][]): number[][] => {
   
   // 填充转置矩阵
   for (let y = 0; y < matrix.length; y++) {
+    const row = matrix[y];
+    if (!row) continue;
+    
     for (let x = 0; x < matrix[0].length; x++) {
-      // @ts-expect-error: 确保在循环中访问的元素存在
-      rotated[x][matrix.length - 1 - y] = matrix[y][x];
+      if (row[x] !== undefined) {
+        const value = row[x];
+        const rotatedRow = rotated[x];
+        if (rotatedRow && value !== undefined) {
+          rotatedRow[matrix.length - 1 - y] = value;
+        }
+      }
     }
   }
   
@@ -159,16 +183,21 @@ const rotate = (matrix: number[][]): number[][] => {
 const collide = (arena: number[][], player: { pos: { x: number; y: number }; matrix: number[][] }): boolean => {
   const [m, o] = [player.matrix, player.pos]
   for (let y = 0; y < m.length; ++y) {
+    const row = m[y];
+    if (!row) continue;
+    
     for (let x = 0; x < (m[0] ? m[0].length : 0); ++x) {
-      // @ts-expect-error: 确保在循环中访问的元素存在
-      if (m[y] && m[y][x] !== 0 && 
-         // @ts-expect-error: 确保在循环中访问的元素存在
-         (arena[y + o.y] && arena[y + o.y][x + o.x]) !== 0) {
-        return true
+      if (row[x] !== 0) {
+        const arenaRow = arena[y + o.y];
+        if (arenaRow === undefined || 
+            arenaRow[x + o.x] === undefined || 
+            arenaRow[x + o.x] !== 0) {
+          return true;
+        }
       }
     }
   }
-  return false
+  return false;
 }
 
 // 合并方块到游戏区域
@@ -176,10 +205,9 @@ const merge = (arena: number[][], player: { pos: { x: number; y: number }; matri
   player.matrix.forEach((row, y) => {
     row.forEach((value, x) => {
       if (value !== 0) {
-        // @ts-expect-error: 确保在循环中访问的元素存在
-        if (arena[y + player.pos.y] && arena[y + player.pos.y][x + player.pos.x] !== undefined) {
-          // @ts-expect-error: 确保在循环中访问的元素存在
-          arena[y + player.pos.y][x + player.pos.x] = value
+        const arenaRow = arena[y + player.pos.y];
+        if (arenaRow && arenaRow[x + player.pos.x] !== undefined) {
+          arenaRow[x + player.pos.x] = value;
         }
       }
     })
@@ -191,15 +219,14 @@ const arenaSweep = (): void => {
   let rowCount = 1
   outer: for (let y = arena.length - 1; y > 0; --y) {
     for (let x = 0; x < (arena[0] ? arena[0].length : 0); ++x) {
-      // @ts-expect-error: 确保在循环中访问的元素存在
-      if (arena[y] && arena[y][x] === 0) {
+      const arenaRow = arena[y];
+      if (arenaRow && arenaRow[x] === 0) {
         continue outer
       }
     }
 
     if (arena[y]) {
-      // @ts-expect-error: 确保splice返回的数组元素存在
-      const row = arena.splice(y, 1)[0].fill(0)
+      const row = arena.splice(y, 1)[0]?.fill(0) || Array(arena[0]?.length || 0).fill(0)
       arena.unshift(row)
       ++y
 
@@ -394,6 +421,66 @@ const handleKeyDown = (e: KeyboardEvent): void => {
   }
 }
 
+// 触摸事件处理
+let touchStartX = 0
+let touchStartY = 0
+let touchTimeStart = 0
+
+const handleTouchStart = (e: TouchEvent): void => {
+  if (gameOver.value) return
+  
+  const touch = e.touches[0]
+  if (touch) {
+    touchStartX = touch.clientX
+    touchStartY = touch.clientY
+    touchTimeStart = Date.now()
+  }
+}
+
+const handleTouchMove = (e: TouchEvent): void => {
+  if (gameOver.value) return
+  e.preventDefault() // 防止页面滚动
+  
+  if (e.touches.length > 0) {
+    const touch = e.touches[0]
+    if (!touch) return
+    
+    const diffX = touch.clientX - touchStartX
+    const diffY = touch.clientY - touchStartY
+    const currentTime = Date.now()
+    
+    // 水平滑动控制左右移动
+    if (Math.abs(diffX) > 30) { // 至少滑动30px才触发
+      if (diffX > 0) {
+        playerMove(1) // 右移
+      } else {
+        playerMove(-1) // 左移
+      }
+      // 重置起始点，避免连续触发
+      touchStartX = touch.clientX
+      touchStartY = touch.clientY
+    }
+    
+    // 垂直向下滑动控制下落
+    if (diffY > 50) { // 向下滑动超过50px
+      playerDrop()
+      touchStartY = touch.clientY
+    }
+    
+    // 垂直向上滑动控制旋转
+    if (diffY < -50) { // 向上滑动超过50px
+      playerRotate(1)
+      touchStartY = touch.clientY
+    }
+    
+    // 快速下滑触发硬降落
+    if (diffY > 100 && (currentTime - touchTimeStart) < 300) { // 快速向下滑动超过100px
+      playerHardDrop()
+      touchStartY = touch.clientY
+    }
+  }
+}
+
 // 重置游戏
 const resetGame = (): void => {
   init()
@@ -523,6 +610,20 @@ button:hover {
   margin-top: 20px;
   width: 100%;
   max-width: 600px;
+}
+
+.touch-instructions {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 5px;
+  font-size: 0.9em;
+  border: 1px solid #4CAF50;
+}
+
+.touch-instructions p {
+  margin: 5px 0;
+  font-size: 12px;
 }
 
 .mobile-controls button {

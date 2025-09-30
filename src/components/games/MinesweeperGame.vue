@@ -215,6 +215,66 @@ const handleRightClick = (event: MouseEvent, r: number, c: number) => {
   cell.isFlagged = !cell.isFlagged;
 };
 
+// --- 触摸事件处理 ---
+let longPressTimer: number | null = null;
+let lastTouchCell: { r: number, c: number } | null = null;
+
+const handleTouchStart = (event: TouchEvent, r: number, c: number) => {
+  // 防止页面缩放
+  if (event.touches.length > 1) {
+    event.preventDefault();
+  }
+  
+  lastTouchCell = { r, c };
+  
+  // 设置长按定时器
+  longPressTimer = window.setTimeout(() => {
+    // 长按相当于右键点击
+    if (lastTouchCell) {
+      const { r, c } = lastTouchCell;
+      const row = board[r];
+      if (!row) return;
+      
+      const cell = row[c];
+      if (!cell) return;
+      
+      if (gameOver.value || gameWon.value || cell.isRevealed) return;
+      cell.isFlagged = !cell.isFlagged;
+      
+      // 添加触觉反馈（如果设备支持）
+      if (window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(100);
+      }
+    }
+    
+    longPressTimer = null;
+  }, 500); // 500毫秒长按判定
+};
+
+const handleTouchEnd = (event: TouchEvent) => {
+  // 如果定时器存在，说明不是长按，是普通点击
+  if (longPressTimer !== null) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+    
+    // 普通点击相当于左键点击，揭示格子
+    if (lastTouchCell) {
+      const { r, c } = lastTouchCell;
+      revealCell(r, c);
+    }
+  }
+  
+  lastTouchCell = null;
+};
+
+const handleTouchMove = (event: TouchEvent) => {
+  // 如果手指移动，取消长按
+  if (longPressTimer !== null) {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
+};
+
 // --- 重置游戏 ---
 const resetGame = () => {
   initializeBoard();
@@ -234,6 +294,11 @@ onMounted(() => {
       <p v-if="gameOver">游戏结束！踩到地雷了。</p>
       <p v-else-if="gameWon">恭喜你，成功排雷！</p>
       <button @click="resetGame">重新开始</button>
+      <div class="touch-instructions">
+        <p>移动设备操作说明:</p>
+        <p>- 点击: 揭示格子</p>
+        <p>- 长按: 标记/取消标记地雷</p>
+      </div>
     </div>
     <div class="board" :class="{ 'game-over': gameOver, 'game-won': gameWon }">
       <div v-for="(row, r) in board" :key="r" class="row">
@@ -249,6 +314,9 @@ onMounted(() => {
           }"
           @click="revealCell(r, c)"
           @contextmenu="handleRightClick($event, r, c)"
+          @touchstart="handleTouchStart($event, r, c)"
+          @touchend="handleTouchEnd"
+          @touchmove="handleTouchMove"
         >
           <span v-if="cell.isFlagged">🚩</span>
           <span v-else-if="cell.isRevealed && cell.isMine">💣</span>
@@ -273,6 +341,27 @@ onMounted(() => {
 .game-header {
   text-align: center;
   margin-bottom: 20px;
+}
+
+.game-info {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.touch-instructions {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 5px;
+  font-size: 0.9em;
+  display: none;
+}
+
+/* 在移动设备上显示触摸说明 */
+@media (max-width: 768px) {
+  .touch-instructions {
+    display: block;
+  }
 }
 
 .board {

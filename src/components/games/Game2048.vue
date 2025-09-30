@@ -53,6 +53,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
+// 定义组件名称为多词组合
+defineOptions({
+  name: 'GameTwentyFortyEight'
+})
+
 // 游戏网格
 const grid = ref<number[][]>([
   [0, 0, 0, 0],
@@ -91,36 +96,40 @@ const addRandomTile = () => {
   // 查找所有空位置
   const emptyCells: { row: number; col: number }[] = []
   for (let i = 0; i < 4; i++) {
+    const gridRow = grid.value[i];
+    if (!gridRow) continue;
+
     for (let j = 0; j < 4; j++) {
-      // @ts-expect-error: 访问可能不存在的数组元素
-      if (grid.value[i] && grid.value[i][j] === 0) {
+      if (gridRow[j] === 0) {
         emptyCells.push({ row: i, col: j })
       }
     }
   }
-  
+
   // 如果没有空位置，直接返回
   if (emptyCells.length === 0) return
-  
+
   // 随机选择一个空位置
   const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)]
-  
+
   // 90%概率生成2，10%概率生成4
   const value = Math.random() < 0.9 ? 2 : 4
-  
+
   // 在随机位置放置值
-  if (randomCell && grid.value[randomCell.row]) {
-    // @ts-expect-error: 访问可能不存在的数组元素
-    grid.value[randomCell.row][randomCell.col] = value
+  if (randomCell) {
+    const gridRow = grid.value[randomCell.row];
+    if (gridRow) {
+      gridRow[randomCell.col] = value
+    }
   }
 }
 
 // 移动函数
 const move = (direction: 'up' | 'down' | 'left' | 'right') => {
   if (gameOver.value || win.value) return
-  
+
   let moved = false
-  
+
   // 根据方向执行移动
   switch (direction) {
     case 'up':
@@ -136,7 +145,7 @@ const move = (direction: 'up' | 'down' | 'left' | 'right') => {
       moved = moveRight()
       break
   }
-  
+
   // 如果有移动，则添加新方块并检查游戏状态
   if (moved) {
     addRandomTile()
@@ -147,12 +156,12 @@ const move = (direction: 'up' | 'down' | 'left' | 'right') => {
 // 向左移动
 const moveLeft = (): boolean => {
   let moved = false
-  
+
   for (let i = 0; i < 4; i++) {
     // 获取当前行并移除0
-    // @ts-expect-error: 访问可能不存在的数组元素
-    const row = grid.value[i] ? grid.value[i].filter(val => val !== 0) : []
-    
+    const currentRow = grid.value[i];
+    const row = currentRow ? currentRow.filter(val => val !== 0) : []
+
     // 合并相同相邻元素
     for (let j = 0; j < row.length - 1; j++) {
       if (row[j] !== undefined && row[j] === row[j + 1]) {
@@ -161,38 +170,37 @@ const moveLeft = (): boolean => {
         row.splice(j + 1, 1)
       }
     }
-    
+
     // 补充0到长度为4
     while (row.length < 4) {
       row.push(0)
     }
-    
+
     // 检查是否有变化
-    for (let j = 0; j < 4; j++) {
-      // @ts-expect-error: 访问可能不存在的数组元素
-      if (grid.value[i] && grid.value[i][j] !== row[j]) {
-        moved = true
-      }
-      
-      if (grid.value[i]) {
-        // @ts-expect-error: 访问可能不存在的数组元素
-        grid.value[i][j] = row[j] || 0
+    const gridRow = grid.value[i];
+    if (gridRow) {
+      for (let j = 0; j < 4; j++) {
+        if (gridRow[j] !== row[j]) {
+          moved = true
+        }
+
+        gridRow[j] = row[j] || 0
       }
     }
   }
-  
+
   return moved
 }
 
 // 向右移动
 const moveRight = (): boolean => {
   let moved = false
-  
+
   for (let i = 0; i < 4; i++) {
     // 获取当前行并移除0
-    // @ts-expect-error: 访问可能不存在的数组元素
-    const row = grid.value[i] ? grid.value[i].filter(val => val !== 0) : []
-    
+    const currentRow = grid.value[i];
+    const row = currentRow ? currentRow.filter(val => val !== 0) : []
+
     // 合并相同相邻元素（从右向左）
     for (let j = row.length - 1; j > 0; j--) {
       if (row[j] !== undefined && row[j] === row[j - 1]) {
@@ -202,44 +210,44 @@ const moveRight = (): boolean => {
         j-- // 调整索引
       }
     }
-    
+
     // 在前面补充0到长度为4
     while (row.length < 4) {
       row.unshift(0)
     }
-    
+
     // 检查是否有变化
     for (let j = 0; j < 4; j++) {
-      // @ts-expect-error: 访问可能不存在的数组元素
-      if (grid.value[i] && grid.value[i][j] !== row[j]) {
+      const currentRow = grid.value[i];
+      if (currentRow && currentRow[j] !== row[j]) {
         moved = true
       }
-      
-      if (grid.value[i]) {
-        // @ts-expect-error: 访问可能不存在的数组元素
-        grid.value[i][j] = row[j] || 0
+
+      if (currentRow) {
+        currentRow[j] = row[j] || 0
       }
     }
   }
-  
+
   return moved
 }
 
 // 向上移动
 const moveUp = (): boolean => {
   let moved = false
-  
+
   for (let j = 0; j < 4; j++) {
     // 获取当前列并移除0
     const column: number[] = []
     for (let i = 0; i < 4; i++) {
-      // @ts-expect-error: 访问可能不存在的数组元素
-      if (grid.value[i] && grid.value[i][j] !== 0) {
-        // @ts-expect-error: 访问可能不存在的数组元素
-        column.push(grid.value[i][j] || 0)
+      const gridRow = grid.value[i];
+      if (!gridRow) continue;
+
+      if (gridRow[j] !== 0) {
+        column.push(gridRow[j] || 0)
       }
     }
-    
+
     // 合并相同相邻元素
     for (let i = 0; i < column.length - 1; i++) {
       if (column[i] !== undefined && column[i] === column[i + 1]) {
@@ -248,44 +256,44 @@ const moveUp = (): boolean => {
         column.splice(i + 1, 1)
       }
     }
-    
+
     // 补充0到长度为4
     while (column.length < 4) {
       column.push(0)
     }
-    
+
     // 检查是否有变化
     for (let i = 0; i < 4; i++) {
-      // @ts-expect-error: 访问可能不存在的数组元素
-      if (grid.value[i] && grid.value[i][j] !== column[i]) {
+      const gridRow = grid.value[i];
+      if (!gridRow) continue;
+
+      if (gridRow[j] !== column[i]) {
         moved = true
       }
-      
-      if (grid.value[i]) {
-        // @ts-expect-error: 访问可能不存在的数组元素
-        grid.value[i][j] = column[i] || 0
-      }
+
+      gridRow[j] = column[i] || 0
     }
   }
-  
+
   return moved
 }
 
 // 向下移动
 const moveDown = (): boolean => {
   let moved = false
-  
+
   for (let j = 0; j < 4; j++) {
     // 获取当前列并移除0
     const column: number[] = []
     for (let i = 0; i < 4; i++) {
-      // @ts-expect-error: 访问可能不存在的数组元素
-      if (grid.value[i] && grid.value[i][j] !== 0) {
-        // @ts-expect-error: 访问可能不存在的数组元素
-        column.push(grid.value[i][j] || 0)
+      const gridRow = grid.value[i];
+      if (!gridRow) continue;
+
+      if (gridRow[j] !== 0) {
+        column.push(gridRow[j] || 0)
       }
     }
-    
+
     // 合并相同相邻元素（从下向上）
     for (let i = column.length - 1; i > 0; i--) {
       if (column[i] !== undefined && column[i] === column[i - 1]) {
@@ -295,82 +303,83 @@ const moveDown = (): boolean => {
         i-- // 调整索引
       }
     }
-    
+
     // 在前面补充0到长度为4
     while (column.length < 4) {
       column.unshift(0)
     }
-    
+
     // 检查是否有变化
     for (let i = 0; i < 4; i++) {
-      // @ts-expect-error: 访问可能不存在的数组元素
-      if (grid.value[i] && grid.value[i][j] !== column[i]) {
+      const gridRow = grid.value[i];
+      if (!gridRow) continue;
+
+      if (gridRow[j] !== column[i]) {
         moved = true
       }
-      
-      if (grid.value[i]) {
-        // @ts-expect-error: 访问可能不存在的数组元素
-        grid.value[i][j] = column[i] || 0
-      }
+
+      gridRow[j] = column[i] || 0
     }
   }
-  
+
   return moved
 }
 
 // 检查游戏状态
-const checkGameState = () => {
+const checkGameState = (): void => {
   // 检查是否获胜
   for (let i = 0; i < 4; i++) {
+    const row = grid.value[i];
+    if (!row) continue;
+
     for (let j = 0; j < 4; j++) {
-      // @ts-expect-error: 访问可能不存在的数组元素
-      if (grid.value[i] && grid.value[i][j] === 2048) {
+      if (row[j] === 2048) {
         win.value = true
         return
       }
     }
   }
-  
+
   // 检查是否还有空位置
   for (let i = 0; i < 4; i++) {
+    const row = grid.value[i];
+    if (!row) continue;
+
     for (let j = 0; j < 4; j++) {
-      // @ts-expect-error: 访问可能不存在的数组元素
-      if (grid.value[i] && grid.value[i][j] === 0) {
+      if (row[j] === 0) {
         return
       }
     }
   }
-  
+
   // 检查是否还能合并
   for (let i = 0; i < 4; i++) {
+    const row = grid.value[i];
+    if (!row) continue;
+
     for (let j = 0; j < 3; j++) {
-      if (grid.value[i] && 
-          // @ts-expect-error: 访问可能不存在的数组元素
-          grid.value[i][j] !== undefined && 
-          // @ts-expect-error: 访问可能不存在的数组元素
-          grid.value[i][j + 1] !== undefined &&
-          // @ts-expect-error: 访问可能不存在的数组元素
-          grid.value[i][j] === grid.value[i][j + 1]) {
+      if (row[j] !== undefined &&
+        row[j + 1] !== undefined &&
+        row[j] === row[j + 1]) {
         return
       }
     }
   }
-  
+
   for (let j = 0; j < 4; j++) {
     for (let i = 0; i < 3; i++) {
-      if (grid.value[i] && 
-          grid.value[i + 1] &&
-          // @ts-expect-error: 访问可能不存在的数组元素
-          grid.value[i][j] !== undefined && 
-          // @ts-expect-error: 访问可能不存在的数组元素
-          grid.value[i + 1][j] !== undefined &&
-          // @ts-expect-error: 访问可能不存在的数组元素
-          grid.value[i][j] === grid.value[i + 1][j]) {
+      const row = grid.value[i];
+      const nextRow = grid.value[i + 1];
+      if (!row || !nextRow) continue;
+
+      if (row[j] !== undefined &&
+        nextRow[j] !== undefined &&
+        row[j] === nextRow[j]) {
         return
       }
     }
   }
-  
+
   // 如果没有空位置且不能合并，则游戏结束
   gameOver.value = true
 }
@@ -398,15 +407,70 @@ const handleKeyDown = (e: KeyboardEvent) => {
   }
 }
 
+// 触摸事件处理
+let touchStartX = 0
+let touchStartY = 0
+const handleTouchStart = (e: TouchEvent): void => {
+  const touch = e.touches[0];
+  if (!touch) return;
+
+  touchStartX = touch.clientX
+  touchStartY = touch.clientY
+}
+
+const handleTouchEnd = (e: TouchEvent): void => {
+  if (gameOver.value || win.value) return
+
+  const touch = e.changedTouches[0];
+  if (!touch) return;
+
+  const touchEndX = touch.clientX
+  const touchEndY = touch.clientY
+
+  const dx = touchEndX - touchStartX
+  const dy = touchEndY - touchStartY
+
+  // 确定主要的移动方向
+  if (Math.abs(dx) > Math.abs(dy)) {
+    // 水平滑动
+    if (dx > 50) {
+      move('right') // 右滑
+    } else if (dx < -50) {
+      move('left') // 左滑
+    }
+  } else {
+    // 垂直滑动
+    if (dy > 50) {
+      move('down') // 下滑
+    } else if (dy < -50) {
+      move('up') // 上滑
+    }
+  }
+}
+
 // 初始化游戏
 onMounted(() => {
   initGame()
   window.addEventListener('keydown', handleKeyDown)
+
+  // 添加触摸事件监听
+  const gridElement = document.querySelector('.grid')
+  if (gridElement) {
+    gridElement.addEventListener('touchstart', handleTouchStart as EventListener)
+    gridElement.addEventListener('touchend', handleTouchEnd as EventListener)
+  }
 })
 
 // 清理事件监听器
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown)
+
+  // 移除触摸事件监听
+  const gridElement = document.querySelector('.grid')
+  if (gridElement) {
+    gridElement.removeEventListener('touchstart', handleTouchStart as EventListener)
+    gridElement.removeEventListener('touchend', handleTouchEnd as EventListener)
+  }
 })
 </script>
 

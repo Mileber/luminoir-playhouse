@@ -51,7 +51,9 @@ const initializeGame = () => {
 
 // --- 拖拽相关 ---
 const dragItem = ref<number | null>(null);
+const touchItem = ref<number | null>(null);
 
+// 处理鼠标拖拽
 const handleDragStart = (event: DragEvent, index: number) => {
   dragItem.value = index;
   if (event.dataTransfer) {
@@ -80,6 +82,46 @@ const handleDrop = (event: DragEvent, targetIndex: number) => {
   events.splice(targetIndex, 0, draggedItem);
   
   dragItem.value = null; // Reset drag item
+};
+
+// 处理触摸拖拽
+const handleTouchStart = (event: TouchEvent, index: number) => {
+  touchItem.value = index;
+  // 防止页面滚动
+  event.preventDefault();
+};
+
+const handleTouchMove = (event: TouchEvent) => {
+  if (touchItem.value === null) return;
+  event.preventDefault();
+  
+  // 获取当前触摸位置下的元素
+  const touch = event.touches[0];
+  if (!touch) return;
+  
+  const element = document.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement;
+  
+  // 查找最近的事件项元素
+  const eventItem = element?.closest('.event-item');
+  if (!eventItem) return;
+  
+  // 获取目标索引
+  const targetIndex = parseInt(eventItem.getAttribute('data-index') || '-1');
+  if (targetIndex === -1 || targetIndex === touchItem.value) return;
+  
+  // 移动项目
+  const touchedItem = events[touchItem.value];
+  if (touchedItem === undefined) return;
+  
+  events.splice(touchItem.value, 1);
+  events.splice(targetIndex, 0, touchedItem);
+  
+  // 更新当前拖动项的索引
+  touchItem.value = targetIndex;
+};
+
+const handleTouchEnd = () => {
+  touchItem.value = null;
 };
 
 // --- 检查排序 ---
@@ -121,11 +163,19 @@ onMounted(() => {
           v-for="(event, index) in events"
           :key="event.id"
           class="event-item"
-          :class="{ 'correct': isSorted && event.id === sortedEvents[index]?.id, 'incorrect': isSorted && event.id !== sortedEvents[index]?.id }"
+          :class="{ 
+            'correct': isSorted && event.id === sortedEvents[index]?.id, 
+            'incorrect': isSorted && event.id !== sortedEvents[index]?.id,
+            'dragging': touchItem === index
+          }"
+          :data-index="index"
           draggable="true"
           @dragstart="handleDragStart($event, index)"
           @dragover="handleDragOver"
           @drop="handleDrop($event, index)"
+          @touchstart="handleTouchStart($event, index)"
+          @touchmove="handleTouchMove"
+          @touchend="handleTouchEnd"
         >
           {{ event.description }}
         </div>
