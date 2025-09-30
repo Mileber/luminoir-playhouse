@@ -8,6 +8,7 @@
     <nav style="display:flex; justify-content:center; gap:20px; margin-bottom: 20px; flex-wrap: wrap;">
        <router-link to="/games/minesweeper"><button>开始扫雷游戏</button></router-link>
        <router-link to="/games/history-sorter"><button>开始历史排序游戏</button></router-link>
+       <router-link to="/games/tetris"><button>开始俄罗斯方块游戏</button></router-link>
     </nav>
     <hr/>
     <!-- <TheWelcome />  可以暂时移除或替换为其他内容 -->
@@ -27,10 +28,39 @@
    background-color: #42b883; /* Vue green */
    color: white;
    transition: background-color 0.3s ease, transform 0.2s ease;
+   /* 移动端适配 */
+   min-width: 200px;
+   width: calc(100% - 40px);
+   max-width: 250px;
  }
 
  button:hover {
    background-color: #35495e; /* Vue dark */
    transform: scale(1.05);
+ }
+
+ nav {
+   display: flex;
+   justify-content: center;
+   gap: 20px;
+   margin-bottom: 20px;
+   flex-wrap: wrap;
+   padding: 0 10px;
+ }
+
+ @media (max-width: 768px) {
+   nav {
+     flex-direction: column;
+     align-items: center;
+   }
+   
+   button {
+     width: 80%;
+     max-width: 300px;
+   }
+ }
+
+ h1 {
+   padding: 0 10px;
  }
 </style>

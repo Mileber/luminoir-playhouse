@@ -111,8 +111,10 @@ onMounted(() => {
 
 <template>
   <div class="history-sorter-game">
-    <h2>历史事件排序 📜</h2>
-    <p>请将以下中国历史事件按时间先后顺序（从古至今）进行排序：</p>
+    <div class="game-header">
+      <h1>历史事件排序 📜</h1>
+      <p>请将以下中国历史事件按时间先后顺序（从古至今）进行排序：</p>
+    </div>
     <div class="game-area">
       <div class="events-container">
         <div
@@ -139,80 +141,134 @@ onMounted(() => {
 
 <style scoped>
 .history-sorter-game {
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.game-area {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 20px;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background-color: #f5f5f5;
+}
+
+.game-header {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 .events-container {
   width: 100%;
-  min-height: 300px;
-  border: 1px dashed #aaa;
-  padding: 10px;
-  margin-bottom: 20px;
-  background-color: #f9f9f9;
+  max-width: 600px;
 }
 
 .event-item {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   padding: 15px;
-  margin: 10px 0;
-  background-color: #e3f2fd;
-  border: 1px solid #2196f3;
-  border-radius: 4px;
-  cursor: move; /* Show it's draggable */
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  user-select: none; /* Prevent text selection during drag */
+  margin-bottom: 10px;
+  cursor: move;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
 }
 
 .event-item:hover {
-  background-color: #bbdefb;
-  transform: translateY(-2px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .event-item.correct {
-  background-color: #c8e6c9; /* Light green */
-  border-color: #4caf50;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
 }
 
 .event-item.incorrect {
-  background-color: #ffcdd2; /* Light red */
-  border-color: #f44336;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.dragging {
+  opacity: 0.5;
+  transform: scale(0.98);
 }
 
 .controls {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 15px;
+  margin-top: 20px;
+  text-align: center;
 }
 
 button {
-  padding: 10px 20px;
+  padding: 12px 24px;
   font-size: 16px;
   cursor: pointer;
   border: none;
   border-radius: 4px;
-  background-color: #2196f3;
+  background-color: #42b883;
   color: white;
   transition: background-color 0.3s ease;
+  margin: 0 10px;
 }
 
 button:hover {
-  background-color: #1976d2;
+  background-color: #35495e;
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 
 .feedback {
-  font-size: 18px;
-  font-weight: bold;
-  margin-top: 10px;
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 8px;
   text-align: center;
+  font-weight: bold;
+  max-width: 600px;
+}
+
+.feedback.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.feedback.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .history-sorter-game {
+    padding: 15px;
+  }
+  
+  .event-item {
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  
+  button {
+    padding: 10px 20px;
+    font-size: 14px;
+    margin: 5px;
+    width: 100%;
+    max-width: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .history-sorter-game {
+    padding: 10px;
+  }
+  
+  .event-item {
+    padding: 10px;
+    font-size: 14px;
+  }
+  
+  .game-header h1 {
+    font-size: 24px;
+  }
 }
 </style>

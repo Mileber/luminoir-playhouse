@@ -264,69 +264,98 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  background-color: #f0f0f0;
   padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  max-width: fit-content;
-  margin: 0 auto;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
-.game-info {
-  margin-bottom: 15px;
+.game-header {
   text-align: center;
+  margin-bottom: 20px;
 }
 
 .board {
-  display: inline-block;
-  border: 2px solid #333;
-  background-color: #bdbdbd;
-}
-
-.row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(9, 30px);
+  grid-template-rows: repeat(9, 30px);
+  gap: 2px;
+  margin: 0 auto;
 }
 
 .cell {
   width: 30px;
   height: 30px;
-  border: 1px solid #9e9e9e;
+  border: 1px solid #999;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   font-weight: bold;
-  user-select: none; /* Prevent text selection */
-  background-color: #e0e0e0;
   cursor: pointer;
+  user-select: none;
+  background-color: #ddd;
+}
+
+.cell:hover {
+  background-color: #ccc;
 }
 
 .cell.revealed {
-  background-color: #fff;
-  border: 1px solid #bdbdbd;
+  background-color: #eee;
 }
 
 .cell.mine {
-  background-color: #ff5252; /* Red for revealed mine */
+  background-color: #f00;
 }
 
-.cell.flagged {
-  background-color: #4caf50; /* Green for flagged */
+.controls {
+  margin-top: 20px;
+  text-align: center;
 }
 
-/* Number colors for revealed cells */
-.cell.n1 { color: #2196f3; } /* Blue */
-.cell.n2 { color: #4caf50; } /* Green */
-.cell.n3 { color: #f44336; } /* Red */
-.cell.n4 { color: #9c27b0; } /* Purple */
-.cell.n5 { color: #ff9800; } /* Orange */
-.cell.n6 { color: #00bcd4; } /* Cyan */
-.cell.n7 { color: #000000; } /* Black */
-.cell.n8 { color: #795548; } /* Brown */
-
-.game-over .cell:not(.revealed):not(.flagged) {
-  background-color: #ffcdd2; /* Light red for unrevealed cells on game over */
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  background-color: #42b883;
+  color: white;
+  transition: background-color 0.3s ease;
 }
 
-.game-won .cell.flagged {
-  background-color: #a5d6a7; /* Light green for flags on win */
+button:hover {
+  background-color: #35495e;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .board {
+    grid-template-columns: repeat(9, 25px);
+    grid-template-rows: repeat(9, 25px);
+  }
+
+  .cell {
+    width: 25px;
+    height: 25px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .board {
+    grid-template-columns: repeat(9, 20px);
+    grid-template-rows: repeat(9, 20px);
+  }
+
+  .cell {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+  }
+  
+  .minesweeper-game {
+    padding: 10px;
+  }
 }
 </style>
