@@ -37,7 +37,12 @@ const initializeGame = () => {
   const shuffled = [...historicalEvents];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    // 修复：确保数组元素不为undefined
+    const temp = shuffled[i];
+    if (temp !== undefined && shuffled[j] !== undefined) {
+      shuffled[i] = shuffled[j]!;
+      shuffled[j] = temp;
+    }
   }
   events.push(...shuffled);
   isSorted.value = false;
@@ -67,8 +72,11 @@ const handleDrop = (event: DragEvent, targetIndex: number) => {
   event.preventDefault();
   if (dragItem.value === null || dragItem.value === targetIndex) return;
 
-  const draggedItem = events[dragItem.value];
-  events.splice(dragItem.value, 1);
+  // 确保draggedItem存在且索引有效
+  const draggedItem = events[dragItem.value!];
+  if (draggedItem === undefined) return;
+  
+  events.splice(dragItem.value!, 1);
   events.splice(targetIndex, 0, draggedItem);
   
   dragItem.value = null; // Reset drag item
@@ -79,7 +87,10 @@ const checkOrder = () => {
   isSorted.value = true;
   let correct = true;
   for (let i = 0; i < events.length; i++) {
-    if (events[i].id !== sortedEvents.value[i].id) {
+    // 修复：确保数组元素存在
+    const event = events[i];
+    const sortedEvent = sortedEvents.value[i];
+    if (event && sortedEvent && event.id !== sortedEvent.id) {
       correct = false;
       break;
     }

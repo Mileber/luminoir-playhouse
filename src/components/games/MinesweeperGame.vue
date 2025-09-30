@@ -26,7 +26,12 @@ const revealedCount = computed(() => {
   let count = 0;
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      if (board[r][c].isRevealed) count++;
+      // 修复：确保board[r][c]存在
+      const row = board[r];
+      if (row) {
+        const cell = row[c];
+        if (cell && cell.isRevealed) count++;
+      }
     }
   }
   return count;
@@ -61,9 +66,14 @@ const placeMines = (firstClickRow: number, firstClickCol: number) => {
     // 确保第一个点击的格子及其周围不是地雷
     const isFirstClickArea =
       Math.abs(r - firstClickRow) <= 1 && Math.abs(c - firstClickCol) <= 1;
-    if (!board[r][c].isMine && !isFirstClickArea) {
-      board[r][c].isMine = true;
-      minesPlaced++;
+    // 修复：确保board[r][c]存在
+    const row = board[r];
+    if (row) {
+      const cell = row[c];
+      if (cell && !cell.isMine && !isFirstClickArea) {
+        cell.isMine = true;
+        minesPlaced++;
+      }
     }
   }
 };
@@ -72,21 +82,31 @@ const placeMines = (firstClickRow: number, firstClickCol: number) => {
 const calculateNeighborMines = () => {
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      if (!board[r][c].isMine) {
-        let count = 0;
-        for (let dr = -1; dr <= 1; dr++) {
-          for (let dc = -1; dc <= 1; dc++) {
-            if (dr === 0 && dc === 0) continue;
-            const nr = r + dr;
-            const nc = c + dc;
-            if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
-              if (board[nr][nc].isMine) {
-                count++;
+      // 修复：确保board[r][c]存在
+      const row = board[r];
+      if (row) {
+        const cell = row[c];
+        if (cell && !cell.isMine) {
+          let count = 0;
+          for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+              if (dr === 0 && dc === 0) continue;
+              const nr = r + dr;
+              const nc = c + dc;
+              // 修复：确保board[nr][nc]存在
+              if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+                const nRow = board[nr];
+                if (nRow) {
+                  const nCell = nRow[nc];
+                  if (nCell && nCell.isMine) {
+                    count++;
+                  }
+                }
               }
             }
           }
+          cell.neighborMines = count;
         }
-        board[r][c].neighborMines = count;
       }
     }
   }
@@ -94,7 +114,14 @@ const calculateNeighborMines = () => {
 
 // --- 点击格子 ---
 const revealCell = (r: number, c: number) => {
-  if (gameOver.value || gameWon.value || board[r][c].isRevealed || board[r][c].isFlagged) return;
+  // 修复：确保board[r][c]存在
+  const row = board[r];
+  if (!row) return;
+  
+  const cell = row[c];
+  if (!cell) return;
+  
+  if (gameOver.value || gameWon.value || cell.isRevealed || cell.isFlagged) return;
 
   if (firstClick.value) {
     placeMines(r, c);
@@ -102,7 +129,6 @@ const revealCell = (r: number, c: number) => {
     firstClick.value = false;
   }
 
-  const cell = board[r][c];
   cell.isRevealed = true;
 
   if (cell.isMine) {
@@ -118,9 +144,14 @@ const revealCell = (r: number, c: number) => {
         if (dr === 0 && dc === 0) continue;
         const nr = r + dr;
         const nc = c + dc;
+        // 修复：确保board[nr][nc]存在
         if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
-          if (!board[nr][nc].isRevealed && !board[nr][nc].isFlagged) {
-            revealCell(nr, nc); // Recursive reveal
+          const nRow = board[nr];
+          if (nRow) {
+            const nCell = nRow[nc];
+            if (nCell && !nCell.isRevealed && !nCell.isFlagged) {
+              revealCell(nr, nc); // Recursive reveal
+            }
           }
         }
       }
@@ -134,8 +165,13 @@ const revealCell = (r: number, c: number) => {
 const revealAllMines = () => {
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      if (board[r][c].isMine) {
-        board[r][c].isRevealed = true;
+      // 修复：确保board[r][c]存在
+      const row = board[r];
+      if (row) {
+        const cell = row[c];
+        if (cell && cell.isMine) {
+          cell.isRevealed = true;
+        }
       }
     }
   }
@@ -153,8 +189,13 @@ const checkWin = () => {
 const flagAllMines = () => {
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      if (board[r][c].isMine) {
-        board[r][c].isFlagged = true;
+      // 修复：确保board[r][c]存在
+      const row = board[r];
+      if (row) {
+        const cell = row[c];
+        if (cell && cell.isMine) {
+          cell.isFlagged = true;
+        }
       }
     }
   }
@@ -163,8 +204,15 @@ const flagAllMines = () => {
 // --- 右键标记/取消标记 ---
 const handleRightClick = (event: MouseEvent, r: number, c: number) => {
   event.preventDefault(); // 阻止默认右键菜单
-  if (gameOver.value || gameWon.value || board[r][c].isRevealed) return;
-  board[r][c].isFlagged = !board[r][c].isFlagged;
+  // 修复：确保board[r][c]存在
+  const row = board[r];
+  if (!row) return;
+  
+  const cell = row[c];
+  if (!cell) return;
+  
+  if (gameOver.value || gameWon.value || cell.isRevealed) return;
+  cell.isFlagged = !cell.isFlagged;
 };
 
 // --- 重置游戏 ---
