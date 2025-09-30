@@ -50,7 +50,7 @@ export default defineConfig({
       },
       manifest: {
         name: 'My Awesome PWA Game Hub',
-        short_name: 'GameHub',
+        short_name: '秘制小游戏',
         description: 'A collection of fun mini-games built with Vue 3!',
         theme_color: '#ffffff',
         // Make sure icon path is relative to the 'public' directory or correctly resolved
